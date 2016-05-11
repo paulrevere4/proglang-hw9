@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-// TO DO: Task is currently an ordinary class.
+// TODO: Task is currently an ordinary class.
 // You will need to modify it to make it a task,
 // so it can be given to an Executor thread pool.
 //
@@ -16,7 +16,7 @@ class Task {
     private Account[] accounts;
     private String transaction;
 
-    // TO DO: The sequential version of Task peeks at accounts
+    // TODO: The sequential version of Task peeks at accounts
     // whenever it needs to get a value, and opens, updates, and closes
     // an account whenever it needs to set a value.  This won't work in
     // the parallel version.  Instead, you'll need to cache values
@@ -30,7 +30,7 @@ class Task {
         transaction = trans;
     }
     
-    // TO DO: parseAccount currently returns a reference to an account.
+    // TODO: parseAccount currently returns a reference to an account.
     // You probably want to change it to return a reference to an
     // account *cache* instead.
     //
@@ -110,7 +110,7 @@ public class MultithreadedServer {
         BufferedReader input =
             new BufferedReader(new FileReader(inputFile));
 
-        // TO DO: you will need to create an Executor and then modify the
+        // TODO: you will need to create an Executor and then modify the
         // following loop to feed tasks to the executor instead of running them
         // directly.  
 
