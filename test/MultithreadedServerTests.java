@@ -160,4 +160,22 @@ public class MultithreadedServerTests extends TestCase {
         dumpAccounts();
     }
 
+    @Test
+    public void testLarge1() throws IOException {
+        System.out.println("===STARTING LARGE TEST1===");
+        // initialize accounts
+        accounts = new Account[numLetters];
+        for (int i = A; i <= Z; i++) {
+            accounts[i] = new Account(Z-i);
+        }
+
+        MultithreadedServer.runServer("hw09/data/testLarge1", accounts);
+
+        // assert correct account values
+        for (int i = A; i <= Z; i++) {
+            Character c = new Character((char) (i+'A'));
+            assertEquals("Account "+c+" differs",Z-i+3,accounts[i].getValue());
+        }
+    }
+
 }
