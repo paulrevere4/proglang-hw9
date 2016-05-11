@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -26,12 +28,12 @@ class Task implements Runnable {
 
     private Account[] accounts;
     private String transaction;
-    
+
     private Map<String, Integer> cache;
     private Map<String, Integer> cacheOG;
     private ArrayList<String> writes;
     private ArrayList<String> reads;
-    private ArrayList<String> aquiredLocks;
+    private Set<String> aquiredLocks;
 
     // TODO: The sequential version of Task peeks at accounts
     // whenever it needs to get a value, and opens, updates, and closes
@@ -49,7 +51,7 @@ class Task implements Runnable {
         cacheOG = new TreeMap<String, Integer>();
         writes = new ArrayList<String>();
         reads = new ArrayList<String>();
-        aquiredLocks = new ArrayList<String>();
+        aquiredLocks = new HashSet<String>();
     }
 
     private int getAccountVal(int accountNum) {
@@ -64,7 +66,7 @@ class Task implements Runnable {
             return cache.get(name);
         }
     }
-    
+
     // TODO: parseAccount currently returns a reference to an account.
     // You probably want to change it to return a reference to an
     // account *cache* instead.
@@ -95,7 +97,7 @@ class Task implements Runnable {
         }
         return rtn;
     }
-    
+
     private String getLhsName(String name) {
         if (name.length() != 1) {
             throw new InvalidTransactionError();
@@ -106,7 +108,7 @@ class Task implements Runnable {
         }
         return String.valueOf(name.charAt(0));
     }
-    
+
     public void carryOutCommands() {
         String[] commands = transaction.split(";");
 
@@ -116,10 +118,10 @@ class Task implements Runnable {
             if (words.length < 3) {
                 throw new InvalidTransactionError();
             }
-            
+
 //            Account lhs = parseAccount(words[0]);
             String lhs = getLhsName(words[0]);
-            
+
             if (!words[1].equals("=")) {
                 throw new InvalidTransactionError();
             }
@@ -147,11 +149,11 @@ class Task implements Runnable {
 //            lhs.close();
         }
     }
-    
+
     private int getAccountNum(String name) {
         return (int) (name.charAt(0)) - (int) 'A';
     }
-    
+
     private void aquireLocks() throws TransactionAbortException {
         Collections.sort(reads);
         for (String name : reads) {
@@ -166,7 +168,7 @@ class Task implements Runnable {
             aquiredLocks.add(name);
         }
     }
-    
+
     private void clear() {
         cache.clear();
         cacheOG.clear();
@@ -174,21 +176,21 @@ class Task implements Runnable {
         reads.clear();
         aquiredLocks.clear();
     }
-    
+
     private void verifyReads() throws TransactionAbortException {
         for (String name : cacheOG.keySet()) {
             int accountNum = getAccountNum(name);
             accounts[accountNum].verify(cacheOG.get(name));
         }
     }
-    
+
     private void releaseLocks() {
         for (String name : aquiredLocks) {
             int accountNum = getAccountNum(name);
             accounts[accountNum].close();
         }
     }
-    
+
     private void update() {
         for (String name : writes) {
             int accountNum = getAccountNum(name);
@@ -196,7 +198,7 @@ class Task implements Runnable {
             accounts[accountNum].update(newVal);
 //            accounts[accountNum].close();
         }
-        
+
     }
 
     public void run() {
@@ -206,7 +208,7 @@ class Task implements Runnable {
             try {
                 aquireLocks();
                 verifyReads();
-                
+
             } catch (TransactionAbortException ex) {
                 releaseLocks();
                 clear();
@@ -215,7 +217,7 @@ class Task implements Runnable {
             update();
             releaseLocks();
             break;
-        }   
+        }
         System.out.println("commit: " + transaction);
     }
 }
@@ -226,7 +228,7 @@ public class MultithreadedServer {
     // modifies: accounts
     // effects: accounts change according to transactions in inputFile
     public static void runServer(String inputFile, Account accounts[])
-        throws IOException, InterruptedException {
+        throws IOException {
 
         // read transactions from input file
         String line;
@@ -238,16 +240,22 @@ public class MultithreadedServer {
         // directly.
 
 //        Executor ex = Executors.newFixedThreadPool(3);
-        ExecutorService ex = Executors.newCachedThreadPool();
+        ExecutorService exec = Executors.newCachedThreadPool();
 
         while ((line = input.readLine()) != null) {
             Task t = new Task(accounts, line);
-            ex.execute(t);
+            exec.execute(t);
 //            t.run();
         }
 
-        ex.shutdown();
-        ex.awaitTermination(60, TimeUnit.SECONDS);
+
+        exec.shutdown();
+       try {
+           exec.awaitTermination(60, TimeUnit.SECONDS);
+       } catch (InterruptedException e) {
+           e.printStackTrace();
+       }
+
 
         input.close();
 
