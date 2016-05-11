@@ -43,6 +43,17 @@ public class MultithreadedServerTests extends TestCase {
 
         MultithreadedServer.runServer("src/hw09/data/debug", accounts);
     }
+    
+    @Test
+    public void testRotate() throws IOException, InterruptedException {
+        // initialize accounts
+        accounts = new Account[numLetters];
+        for (int i = A; i <= Z; i++) {
+            accounts[i] = new Account(Z-i);
+        }
+
+        MultithreadedServer.runServer("src/hw09/data/rotate", accounts);
+    }
 
      @Test
      public void testIncrement() throws IOException, InterruptedException {
