@@ -34,7 +34,7 @@ public class MultithreadedServerTests extends TestCase {
      }
 
     @Test
-    public void testDebug() throws IOException {
+    public void testDebug() throws IOException, InterruptedException {
         // initialize accounts
         accounts = new Account[numLetters];
         for (int i = A; i <= Z; i++) {
@@ -45,7 +45,7 @@ public class MultithreadedServerTests extends TestCase {
     }
 
      @Test
-     public void testIncrement() throws IOException {
+     public void testIncrement() throws IOException, InterruptedException {
 
         // initialize accounts
         accounts = new Account[numLetters];

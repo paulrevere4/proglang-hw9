@@ -5,7 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 // TODO: Task is currently an ordinary class.
 // You will need to modify it to make it a task,
@@ -107,7 +109,7 @@ public class MultithreadedServer {
     // modifies: accounts
     // effects: accounts change according to transactions in inputFile
     public static void runServer(String inputFile, Account accounts[])
-        throws IOException {
+        throws IOException, InterruptedException {
 
         // read transactions from input file
         String line;
@@ -118,13 +120,17 @@ public class MultithreadedServer {
         // following loop to feed tasks to the executor instead of running them
         // directly.
 
-        Executor ex = Executors.newFixedThreadPool(3);
+//        Executor ex = Executors.newFixedThreadPool(3);
+        ExecutorService ex = Executors.newCachedThreadPool();
 
         while ((line = input.readLine()) != null) {
             Task t = new Task(accounts, line);
-//            ex.execute(t);
-            t.run();
+            ex.execute(t);
+//            t.run();
         }
+
+        ex.shutdown();
+        ex.awaitTermination(60, TimeUnit.SECONDS);
 
         input.close();
 
