@@ -35,6 +35,7 @@ public class MultithreadedServerTests extends TestCase {
 
     @Test
     public void testDebug() throws IOException {
+//        System.out.println("===STARTING DEBUG TESTS===");
         // initialize accounts
         accounts = new Account[numLetters];
         for (int i = A; i <= Z; i++) {
@@ -42,10 +43,12 @@ public class MultithreadedServerTests extends TestCase {
         }
 
         MultithreadedServer.runServer("hw09/data/debug", accounts);
+//        MultithreadedServer.runServer("hw09/data/debug", accounts);
     }
     
     @Test
     public void testRotate() throws IOException {
+//        System.out.println("===STARTING ROTATE TESTS===");
         // initialize accounts
         accounts = new Account[numLetters];
         for (int i = A; i <= Z; i++) {
@@ -53,11 +56,12 @@ public class MultithreadedServerTests extends TestCase {
         }
 
         MultithreadedServer.runServer("hw09/data/rotate", accounts);
+//        MultithreadedServer.runServer("src/hw09/data/rotate", accounts);
     }
 
      @Test
      public void testIncrement() throws IOException {
-
+//        System.out.println("===STARTING INCREMENT TESTS===");
         // initialize accounts
         accounts = new Account[numLetters];
         for (int i = A; i <= Z; i++) {
@@ -65,6 +69,7 @@ public class MultithreadedServerTests extends TestCase {
         }
 
         MultithreadedServer.runServer("hw09/data/increment", accounts);
+//        MultithreadedServer.runServer("src/hw09/data/increment", accounts);
 
         // assert correct account values
         for (int i = A; i <= Z; i++) {

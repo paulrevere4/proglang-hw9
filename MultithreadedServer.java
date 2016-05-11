@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -156,20 +157,18 @@ class Task implements Runnable {
     }
 
     private void aquireLocks() throws TransactionAbortException {
+//        System.out.println("Transaction:" + transaction + " reads: " + reads.toString() + " writes: " + writes.toString());
         for (String name : reads) {
-//            if (!aquiredLocks.contains(name)) {
-                int accountNum = getAccountNum(name);
-                accounts[accountNum].open(false);
-                aquiredLocks.add(name);
-//            }
+            int accountNum = getAccountNum(name);
+            accounts[accountNum].open(false);
+            aquiredLocks.add(name);
         }
         for (String name : writes) {
-//            if (!aquiredLocks.contains(name)) {
-                int accountNum = getAccountNum(name);
-                accounts[accountNum].open(true);
-                aquiredLocks.add(name);
-//            }
+            int accountNum = getAccountNum(name);
+            accounts[accountNum].open(true);
+            aquiredLocks.add(name);
         }
+//        System.out.println("Transaction:" + transaction + " aquired locks!");
     }
 
     private void clear() {
@@ -204,6 +203,15 @@ class Task implements Runnable {
 
     }
 
+    private void randomWait() {
+        try {
+            Random rand = new Random();
+            Thread.sleep( rand.nextInt(1000) );  // ms
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void run() {
         // tokenize transaction
         while (true) {
@@ -211,15 +219,11 @@ class Task implements Runnable {
             try {
                 aquireLocks();
                 verifyReads();
-
             } catch (TransactionAbortException ex) {
+//                System.out.println("Transaction:" + transaction + " couldn't aquire locks. Resetting.");
                 releaseLocks();
                 clear();
-//                try {
-//                    Thread.sleep(1000);  // ms
-//                } catch(InterruptedException e) {
-//                    e.printStackTrace();
-//                }
+                randomWait();
                 continue;
             }
             update();
@@ -255,14 +259,13 @@ public class MultithreadedServer {
             exec.execute(t);
 //            t.run();
         }
-        
-        exec.shutdown();
-       try {
-           exec.awaitTermination(60, TimeUnit.SECONDS);
-       } catch (InterruptedException e) {
-           e.printStackTrace();
-       }
 
+        exec.shutdown();
+        try {
+            exec.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         input.close();
 
     }
