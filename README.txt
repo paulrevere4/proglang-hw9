@@ -25,4 +25,11 @@ console that it was successful.
 Test Cases
 ================================================================================
 We provide a series of test cases to simulate different interactions between the
-threads.
+threads. We include the "increment" and the "rotate" tests that we were provided
+as they act as good examples. We then added smaller tests that ensure the code
+produces the correct results in more complicated transactions. These tests also
+excercise the mechanisms for acquiring and releasing locks when there are
+conflicts in writing, the tests that do this are the testReadWrite* tests and
+the testLarge test. They also check that the server code will cache the values
+of the accounts rather than interact with the shared list for each task, these
+tests are the testCache* tests.
