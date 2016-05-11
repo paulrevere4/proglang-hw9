@@ -206,7 +206,7 @@ class Task implements Runnable {
     }
 
     /**
-     * Clears all shared memory, for use when transaction fails due
+     * Clears all local memory, for use when transaction fails due
      * to changes in accounts, will need to try again.
      */
     private void clear() {
