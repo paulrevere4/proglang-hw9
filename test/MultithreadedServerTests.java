@@ -88,10 +88,10 @@ public class MultithreadedServerTests extends TestCase {
 
         assertEquals("Account A differs",25,accounts[0].getValue());
         assertEquals("Account B differs",0,accounts[1].getValue());
-        assertTrue("Account Z differs, should be 26 or 2 was " + accounts[25].getValue()
-            ,possibleZs.contains( accounts[25].getValue()) );
-        assertTrue("Account Y differs, should be 25 or 1 was " + accounts[24].getValue()
-            ,possibleYs.contains( accounts[24].getValue()) );
+        assertTrue("Account Z differs, should be 26 or 2 was " + accounts[25].getValue(),
+            possibleZs.contains( accounts[25].getValue()) );
+        assertTrue("Account Y differs, should be 25 or 1 was " + accounts[24].getValue(),
+            possibleYs.contains( accounts[24].getValue()) );
     }
 
     @Test
@@ -112,10 +112,10 @@ public class MultithreadedServerTests extends TestCase {
         possibleBs.add(0);
         possibleBs.add(1);
 
-        assertTrue("Account A differs, should be 28 or 29 was " + accounts[0].getValue()
-            ,possibleAs.contains( accounts[0].getValue()) );
-        assertTrue("Account B differs, should be 0 or 1 was " + accounts[1].getValue()
-            ,possibleBs.contains( accounts[1].getValue()) );
+        assertTrue("Account A differs, should be 28 or 29 was " + accounts[0].getValue(),
+            possibleAs.contains( accounts[0].getValue()) );
+        assertTrue("Account B differs, should be 0 or 1 was " + accounts[1].getValue(),
+            possibleBs.contains( accounts[1].getValue()) );
     }
 
     @Test
@@ -146,7 +146,6 @@ public class MultithreadedServerTests extends TestCase {
             Character c = new Character((char) (i+'A'));
             assertEquals("Account "+c+" differs",Z-i+1,accounts[i].getValue());
         }
-
     }
 
     @Test
@@ -159,7 +158,6 @@ public class MultithreadedServerTests extends TestCase {
         }
 
         dumpAccounts();
-        
     }
 
 }
