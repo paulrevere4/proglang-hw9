@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,8 +32,8 @@ class Task implements Runnable {
 
     private Map<String, Integer> cache;
     private Map<String, Integer> cacheOG;
-    private ArrayList<String> writes;
-    private ArrayList<String> reads;
+    private Set<String> writes;
+    private Set<String> reads;
     private Set<String> aquiredLocks;
 
     // TODO: The sequential version of Task peeks at accounts
@@ -49,8 +50,8 @@ class Task implements Runnable {
         transaction = trans;
         cache = new TreeMap<String, Integer>();
         cacheOG = new TreeMap<String, Integer>();
-        writes = new ArrayList<String>();
-        reads = new ArrayList<String>();
+        writes = new TreeSet<String>();
+        reads = new TreeSet<String>();
         aquiredLocks = new HashSet<String>();
     }
 
@@ -139,7 +140,7 @@ class Task implements Runnable {
             }
             cache.put(lhs, rhs);
             writes.add(lhs);
-            System.out.println(cache.toString());
+//            System.out.println(cache.toString());
 //            try {
 //                lhs.open(true);
 //            } catch (TransactionAbortException e) {
@@ -155,17 +156,19 @@ class Task implements Runnable {
     }
 
     private void aquireLocks() throws TransactionAbortException {
-        Collections.sort(reads);
         for (String name : reads) {
-            int accountNum = getAccountNum(name);
-            accounts[accountNum].open(false);
-            aquiredLocks.add(name);
+//            if (!aquiredLocks.contains(name)) {
+                int accountNum = getAccountNum(name);
+                accounts[accountNum].open(false);
+                aquiredLocks.add(name);
+//            }
         }
-        Collections.sort(writes);
         for (String name : writes) {
-            int accountNum = getAccountNum(name);
-            accounts[accountNum].open(true);
-            aquiredLocks.add(name);
+//            if (!aquiredLocks.contains(name)) {
+                int accountNum = getAccountNum(name);
+                accounts[accountNum].open(true);
+                aquiredLocks.add(name);
+//            }
         }
     }
 
@@ -212,6 +215,11 @@ class Task implements Runnable {
             } catch (TransactionAbortException ex) {
                 releaseLocks();
                 clear();
+//                try {
+//                    Thread.sleep(1000);  // ms
+//                } catch(InterruptedException e) {
+//                    e.printStackTrace();
+//                }
                 continue;
             }
             update();
@@ -247,15 +255,13 @@ public class MultithreadedServer {
             exec.execute(t);
 //            t.run();
         }
-
-
+        
         exec.shutdown();
        try {
            exec.awaitTermination(60, TimeUnit.SECONDS);
        } catch (InterruptedException e) {
            e.printStackTrace();
        }
-
 
         input.close();
 
