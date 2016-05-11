@@ -36,12 +36,14 @@ class Task {
     //
     private Account parseAccount(String name) {
         int accountNum = (int) (name.charAt(0)) - (int) 'A';
-        if (accountNum < A || accountNum > Z)
+        if (accountNum < A || accountNum > Z) {
             throw new InvalidTransactionError();
+        }
         Account a = accounts[accountNum];
         for (int i = 1; i < name.length(); i++) {
-            if (name.charAt(i) != '*')
+            if (name.charAt(i) != '*') {
                 throw new InvalidTransactionError();
+            }
             accountNum = (accounts[accountNum].peek() % numLetters);
             a = accounts[accountNum];
         }
@@ -64,19 +66,24 @@ class Task {
 
         for (int i = 0; i < commands.length; i++) {
             String[] words = commands[i].trim().split("\\s");
-            if (words.length < 3)
+            if (words.length < 3) {
                 throw new InvalidTransactionError();
+            }
             Account lhs = parseAccount(words[0]);
-            if (!words[1].equals("="))
+            if (!words[1].equals("=")) {
                 throw new InvalidTransactionError();
+            }
             int rhs = parseAccountOrNum(words[2]);
             for (int j = 3; j < words.length; j+=2) {
-                if (words[j].equals("+"))
+                if (words[j].equals("+")) {
                     rhs += parseAccountOrNum(words[j+1]);
-                else if (words[j].equals("-"))
+                }
+                else if (words[j].equals("-")) {
                     rhs -= parseAccountOrNum(words[j+1]);
-                else
+                }
+                else {
                     throw new InvalidTransactionError();
+                }
             }
             try {
                 lhs.open(true);
@@ -92,9 +99,9 @@ class Task {
 
 public class MultithreadedServer {
 
-	// requires: accounts != null && accounts[i] != null (i.e., accounts are properly initialized)
-	// modifies: accounts
-	// effects: accounts change according to transactions in inputFile
+    // requires: accounts != null && accounts[i] != null (i.e., accounts are properly initialized)
+    // modifies: accounts
+    // effects: accounts change according to transactions in inputFile
     public static void runServer(String inputFile, Account accounts[])
         throws IOException {
 
