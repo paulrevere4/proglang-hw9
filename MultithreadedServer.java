@@ -3,12 +3,15 @@ package hw09;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 // TODO: Task is currently an ordinary class.
 // You will need to modify it to make it a task,
 // so it can be given to an Executor thread pool.
 //
-class Task {
+class Task implements Runnable {
     private static final int A = constants.A;
     private static final int Z = constants.Z;
     private static final int numLetters = constants.numLetters;
@@ -29,7 +32,7 @@ class Task {
         accounts = allAccounts;
         transaction = trans;
     }
-    
+
     // TODO: parseAccount currently returns a reference to an account.
     // You probably want to change it to return a reference to an
     // account *cache* instead.
@@ -66,6 +69,7 @@ class Task {
 
         for (int i = 0; i < commands.length; i++) {
             String[] words = commands[i].trim().split("\\s");
+            System.out.println(Arrays.toString(words));
             if (words.length < 3) {
                 throw new InvalidTransactionError();
             }
@@ -112,13 +116,16 @@ public class MultithreadedServer {
 
         // TODO: you will need to create an Executor and then modify the
         // following loop to feed tasks to the executor instead of running them
-        // directly.  
+        // directly.
+
+        Executor ex = Executors.newFixedThreadPool(3);
 
         while ((line = input.readLine()) != null) {
             Task t = new Task(accounts, line);
+//            ex.execute(t);
             t.run();
         }
-        
+
         input.close();
 
     }
