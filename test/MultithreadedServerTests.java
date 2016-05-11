@@ -34,6 +34,7 @@ public class MultithreadedServerTests extends TestCase {
         }
      }
 
+    //tests that the server uses the cache properly
     @Test
     public void testCache1() throws IOException {
         // initialize accounts to 0
@@ -51,6 +52,7 @@ public class MultithreadedServerTests extends TestCase {
         assertEquals("Account D differs",2,accounts[3].getValue());
     }
     
+    //tests that the server uses the cache properly
     @Test
     public void testCache2() throws IOException {
         // initialize accounts to 0
@@ -68,6 +70,7 @@ public class MultithreadedServerTests extends TestCase {
         assertEquals("Account D differs",0,accounts[3].getValue());
     }
     
+    //tests that the server reads and writes to accounts properly
     @Test
     public void testReadWrite1() throws IOException {
         // initialize accounts to 0
@@ -94,6 +97,7 @@ public class MultithreadedServerTests extends TestCase {
             possibleYs.contains( accounts[24].getValue()) );
     }
 
+    //tests that the server reads and writes to accounts properly
     @Test
     public void testReadWrite2() throws IOException {
         // initialize accounts to 0
@@ -160,6 +164,7 @@ public class MultithreadedServerTests extends TestCase {
         dumpAccounts();
     }
 
+    //tests that the server reads and writes to accounts properly
     @Test
     public void testLarge1() throws IOException {
         System.out.println("===STARTING LARGE TEST1===");
