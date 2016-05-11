@@ -46,6 +46,13 @@ class Task implements Runnable {
     // writing, or both, (2) verify all previously peeked-at values,
     // (3) perform all updates, and (4) close all opened accounts.
 
+    /**
+     * Task constructor given access to accounts (shared memory) and a
+     * string containing the write(s) in the current transaction.
+     * 
+     * @param allAccounts   an array of all accounts
+     * @param trans         a string containing the transaction
+     */
     public Task(Account[] allAccounts, String trans) {
         accounts = allAccounts;
         transaction = trans;
@@ -56,6 +63,15 @@ class Task implements Runnable {
         aquiredLocks = new HashSet<String>();
     }
 
+    /**
+     * Given an account number, the account name is derived using
+     * the alphabetical offset. The first time a new account is seen
+     * the amount is cached for later verification, otherwise if it
+     * has already been seen it returns the cached value.
+     * 
+     * @param accountNum    integer representing alphabetical account
+     * @return              the value of the specified account
+     */
     private int getAccountVal(int accountNum) {
         String name = String.valueOf( (char)(accountNum+'A') );
         if ( !cache.containsKey(name)) {
@@ -73,6 +89,14 @@ class Task implements Runnable {
     // You probably want to change it to return a reference to an
     // account *cache* instead.
     //
+    /**
+     * Given an account name, access the account, perform the nested
+     * asterisk operator as described, and then return the value.
+     * 
+     * @param name  string representing account
+     * @throws      InvalidTransactionError if accountNum not valid index
+     * @return      value of the account
+     */
     private int parseAccount(String name) {
         int accountNum = (int) (name.charAt(0)) - (int) 'A';
         if (accountNum < A || accountNum > Z) {
@@ -90,6 +114,13 @@ class Task implements Runnable {
         return accountVal;
     }
 
+    /**
+     * Given a valid integer, returns that value. Otherwise
+     * attempts to access account with the same name.
+     * 
+     * @param name  string representing an account (or number)
+     * @return      value of the account (or number)
+     */
     private int parseAccountOrNum(String name) {
         int rtn;
         if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
@@ -100,6 +131,14 @@ class Task implements Runnable {
         return rtn;
     }
 
+    /**
+     * Given account name, return the name of the account being written to.
+     * 
+     * @param name  string representing account
+     * @throws      InvalidTransactionError if multi-letter account provided
+     *                                      or invalid letter provided
+     * @return      name of account
+     */
     private String getLhsName(String name) {
         if (name.length() != 1) {
             throw new InvalidTransactionError();
@@ -111,6 +150,14 @@ class Task implements Runnable {
         return String.valueOf(name.charAt(0));
     }
 
+    /**
+     * Using cached values, performs serialized operations of
+     * a single transaction, which may include multiple
+     * writes separated by a semicolon. Tracks all accounts
+     * which will need to be read from/written to.
+     * 
+     * @throws InvalidTransactionError  if input unexpected
+     */
     public void carryOutCommands() {
         String[] commands = transaction.split(";");
 
@@ -152,10 +199,23 @@ class Task implements Runnable {
         }
     }
 
+    /**
+     * Converts capital letter to integer using alphabetical offset.
+     * 
+     * @param name  string representing account
+     * @return      corresponding number
+     */
     private int getAccountNum(String name) {
         return (int) (name.charAt(0)) - (int) 'A';
     }
 
+    /**
+     * Using shared memory containing which accounts will need to be
+     * read from/written to, opens all of them in alphabetical order 
+     * to prevent deadlock, acquiring locks too all accounts.
+     * 
+     * @throws TransactionAbortException    if opened incorrectly
+     */
     private void aquireLocks() throws TransactionAbortException {
 //        System.out.println("Transaction:" + transaction + " reads: " + reads.toString() + " writes: " + writes.toString());
         for (String name : reads) {
@@ -171,6 +231,10 @@ class Task implements Runnable {
 //        System.out.println("Transaction:" + transaction + " aquired locks!");
     }
 
+    /**
+     * Clears all shared memory, for use when transaction fails due
+     * to changes in accounts, will need to try again.
+     */
     private void clear() {
         cache.clear();
         cacheOG.clear();
@@ -179,6 +243,12 @@ class Task implements Runnable {
         aquiredLocks.clear();
     }
 
+    /**
+     * Makes sure that all accounts are the same as what they were
+     * when the transaction began.
+     * 
+     * @throws TransactionAbortException    if verify fails
+     */
     private void verifyReads() throws TransactionAbortException {
         for (String name : cacheOG.keySet()) {
             int accountNum = getAccountNum(name);
@@ -186,6 +256,9 @@ class Task implements Runnable {
         }
     }
 
+    /**
+     * Releases the lock to all accounts read from/written to.
+     */
     private void releaseLocks() {
         for (String name : aquiredLocks) {
             int accountNum = getAccountNum(name);
@@ -193,6 +266,9 @@ class Task implements Runnable {
         }
     }
 
+    /**
+     * Update left hand side accounts with the computed values.
+     */
     private void update() {
         for (String name : writes) {
             int accountNum = getAccountNum(name);
@@ -203,6 +279,12 @@ class Task implements Runnable {
 
     }
 
+    /**
+     * Perform a random wait when threads are competing for
+     * access which causes both to restart, without this it
+     * is highly likely that the threads would both compete
+     * again, causing repeated failures.
+     */
     private void randomWait() {
         try {
             Random rand = new Random();
@@ -212,6 +294,15 @@ class Task implements Runnable {
         }
     }
 
+    /**
+     * Carries out the 4 operations described above after
+     * obtaining a cache of all accounts.
+     * 
+     * (1) open all accounts you need, for reading, writing, or both 
+     * (2) verify all previously peeked-at values
+     * (3) perform all updates
+     * (4) close all opened accounts
+     */
     public void run() {
         // tokenize transaction
         while (true) {
