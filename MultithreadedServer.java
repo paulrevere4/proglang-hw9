@@ -28,7 +28,7 @@ class Task implements Runnable {
     private static final int Z = constants.Z;
     private static final int numLetters = constants.numLetters;
 
-    private Account[] accounts;
+    private Account[] accounts; /* shared mutable state */
     private String transaction;
 
     private Map<String, Integer> cache;
@@ -36,15 +36,6 @@ class Task implements Runnable {
     private Set<String> writes;
     private Set<String> reads;
     private Set<String> aquiredLocks;
-
-    // TODO: The sequential version of Task peeks at accounts
-    // whenever it needs to get a value, and opens, updates, and closes
-    // an account whenever it needs to set a value.  This won't work in
-    // the parallel version.  Instead, you'll need to cache values
-    // you've read and written, and then, after figuring out everything
-    // you want to do, (1) open all accounts you need, for reading,
-    // writing, or both, (2) verify all previously peeked-at values,
-    // (3) perform all updates, and (4) close all opened accounts.
 
     /**
      * Task constructor given access to accounts (shared memory) and a
@@ -85,10 +76,6 @@ class Task implements Runnable {
         }
     }
 
-    // TODO: parseAccount currently returns a reference to an account.
-    // You probably want to change it to return a reference to an
-    // account *cache* instead.
-    //
     /**
      * Given an account name, access the account, perform the nested
      * asterisk operator as described, and then return the value.
@@ -102,7 +89,6 @@ class Task implements Runnable {
         if (accountNum < A || accountNum > Z) {
             throw new InvalidTransactionError();
         }
-//        Account a = accounts[accountNum];
         int accountVal = getAccountVal(accountNum);
         for (int i = 1; i < name.length(); i++) {
             if (name.charAt(i) != '*') {
@@ -163,12 +149,10 @@ class Task implements Runnable {
 
         for (int i = 0; i < commands.length; i++) {
             String[] words = commands[i].trim().split("\\s");
-//            System.out.println(Arrays.toString(words));
             if (words.length < 3) {
                 throw new InvalidTransactionError();
             }
 
-//            Account lhs = parseAccount(words[0]);
             String lhs = getLhsName(words[0]);
 
             if (!words[1].equals("=")) {
@@ -188,14 +172,6 @@ class Task implements Runnable {
             }
             cache.put(lhs, rhs);
             writes.add(lhs);
-//            System.out.println(cache.toString());
-//            try {
-//                lhs.open(true);
-//            } catch (TransactionAbortException e) {
-//                // won't happen in sequential version
-//            }
-//            lhs.update(rhs);
-//            lhs.close();
         }
     }
 
@@ -217,7 +193,6 @@ class Task implements Runnable {
      * @throws TransactionAbortException    if opened incorrectly
      */
     private void aquireLocks() throws TransactionAbortException {
-//        System.out.println("Transaction:" + transaction + " reads: " + reads.toString() + " writes: " + writes.toString());
         for (String name : reads) {
             int accountNum = getAccountNum(name);
             accounts[accountNum].open(false);
@@ -228,7 +203,6 @@ class Task implements Runnable {
             accounts[accountNum].open(true);
             aquiredLocks.add(name);
         }
-//        System.out.println("Transaction:" + transaction + " aquired locks!");
     }
 
     /**
@@ -274,7 +248,6 @@ class Task implements Runnable {
             int accountNum = getAccountNum(name);
             int newVal = cache.get(name);
             accounts[accountNum].update(newVal);
-//            accounts[accountNum].close();
         }
 
     }
@@ -304,14 +277,13 @@ class Task implements Runnable {
      * (4) close all opened accounts
      */
     public void run() {
-        // tokenize transaction
+        // while loop tries to complete the transaction until it is successful
         while (true) {
             carryOutCommands();
             try {
                 aquireLocks();
                 verifyReads();
             } catch (TransactionAbortException ex) {
-//                System.out.println("Transaction:" + transaction + " couldn't aquire locks. Resetting.");
                 releaseLocks();
                 clear();
                 randomWait();
@@ -338,19 +310,14 @@ public class MultithreadedServer {
         BufferedReader input =
             new BufferedReader(new FileReader(inputFile));
 
-        // TODO: you will need to create an Executor and then modify the
-        // following loop to feed tasks to the executor instead of running them
-        // directly.
-
-//        Executor ex = Executors.newFixedThreadPool(3);
         ExecutorService exec = Executors.newCachedThreadPool();
 
         while ((line = input.readLine()) != null) {
             Task t = new Task(accounts, line);
             exec.execute(t);
-//            t.run();
         }
 
+        //waits here until all threads join back
         exec.shutdown();
         try {
             exec.awaitTermination(60, TimeUnit.SECONDS);
