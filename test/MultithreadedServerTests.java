@@ -81,10 +81,10 @@ public class MultithreadedServerTests extends TestCase {
 
         Set<Integer> possibleZs = new HashSet();
         possibleZs.add(26);
-        possibleZs.add(2);
+         possibleZs.add(2);
         Set<Integer> possibleYs = new HashSet();
         possibleYs.add(25);
-        possibleYs.add(1);
+         possibleYs.add(1);
 
         assertEquals("Account A differs",25,accounts[0].getValue());
         assertEquals("Account B differs",0,accounts[1].getValue());
@@ -92,6 +92,30 @@ public class MultithreadedServerTests extends TestCase {
             ,possibleZs.contains( accounts[25].getValue()) );
         assertTrue("Account Y differs, should be 25 or 1 was " + accounts[24].getValue()
             ,possibleYs.contains( accounts[24].getValue()) );
+    }
+
+    @Test
+    public void testReadWrite2() throws IOException {
+        // initialize accounts to 0
+        System.out.println("===STARTING READ/WRITE TEST 2===");
+        accounts = new Account[numLetters];
+        for (int i = A; i <= Z; i++) {
+            accounts[i] = new Account(Z-i);
+        }
+
+        MultithreadedServer.runServer("hw09/data/testReadWrite2", accounts);
+
+        Set<Integer> possibleAs = new HashSet();
+        possibleAs.add(28);
+        possibleAs.add(29);
+        Set<Integer> possibleBs = new HashSet();
+        possibleBs.add(0);
+        possibleBs.add(1);
+
+        assertTrue("Account A differs, should be 28 or 29 was " + accounts[0].getValue()
+            ,possibleAs.contains( accounts[0].getValue()) );
+        assertTrue("Account B differs, should be 0 or 1 was " + accounts[1].getValue()
+            ,possibleBs.contains( accounts[1].getValue()) );
     }
 
     @Test
@@ -123,8 +147,19 @@ public class MultithreadedServerTests extends TestCase {
             assertEquals("Account "+c+" differs",Z-i+1,accounts[i].getValue());
         }
 
-
     }
 
+    @Test
+    public void testAccountPrint() throws IOException {
+        System.out.println("===STARTING ACCOUNT PRINT TEST===");
+        // initialize accounts
+        accounts = new Account[numLetters];
+        for (int i = A; i <= Z; i++) {
+            accounts[i] = new Account(Z-i);
+        }
+
+        dumpAccounts();
+        
+    }
 
 }
